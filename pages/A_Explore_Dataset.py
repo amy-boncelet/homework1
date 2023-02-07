@@ -49,8 +49,9 @@ def load_dataset(data):
     Output: pandas dataframe df
     - Checkpoint 1 - Read .csv file containing a dataset
     """
-    pass
-    return 0
+    df = pd.read_csv(data)
+
+    return df
 
 # Checkpoint 2
 def compute_correlation(X,features):
@@ -58,8 +59,9 @@ def compute_correlation(X,features):
     Input: X is pandas dataframe, features is a list of feature name (string) ['age','height']
     Output: correlation coefficients between one or more features
     """
-    pass
-    return 0
+    correlation = X.corr[features] 
+
+    return correlation
 
 # Helper Function
 def user_input_features(df):
@@ -122,20 +124,23 @@ col1, col2 = st.columns(2)
 # with(col1):
 # with(col2):
 
-data=None
+data=st.file_uploader("Upload a csv file")
 if data:
     ###################### EXPLORE DATASET #######################
     st.markdown('### Explore Dataset Features')
 
     # Load dataset
-    #df = load_dataset(...)
+    df = load_dataset(data)
 
     # Restore dataset if already in memory
 
     # Display feature names and descriptions (from feature_lookup)
-    #display_features(...,feature_lookup)
+    display_features(df,feature_lookup)
+    features = user_input_features(df)
+    #display_features(df,features)
     
     # Display dataframe as table using streamlit dataframe function
+    st.dataframe(df)
 
     # Select feature to explore
 
@@ -153,10 +158,12 @@ if data:
     st.markdown("### Looking for Correlations")
 
     # Collect features for correlation analysis using multiselect
-
+    defaultcols = ["housing_median_age", "total_rooms", "total_bedrooms", "population", "households"]
+    cols = st.multiselect("Columns", df.columns.tolist(), default=defaultcols)
+    
     # Compute correlation between selected features 
-    #correlation = compute_correlation(...)
-    #st.write(correlation) 
+    correlation = compute_correlation(df, cols)
+    st.write(correlation)
 
     # Display correlation of all feature pairs 
     
