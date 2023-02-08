@@ -59,7 +59,7 @@ def compute_correlation(X,features):
     Input: X is pandas dataframe, features is a list of feature name (string) ['age','height']
     Output: correlation coefficients between one or more features
     """
-    correlation = X.corr[features] 
+    correlation = X[features].corr()
 
     return correlation
 
@@ -136,8 +136,6 @@ if data:
 
     # Display feature names and descriptions (from feature_lookup)
     display_features(df,feature_lookup)
-    features = user_input_features(df)
-    #display_features(df,features)
     
     # Display dataframe as table using streamlit dataframe function
     st.dataframe(df)
@@ -151,20 +149,68 @@ if data:
     st.sidebar.header('Specify Input Parameters')
 
     # Collect user plot selection
+    st.sidebar.text ("Select type of chart")
+    chart = st.sidebar.selectbox("Type of chart",("Scatterplot", "Lineplot", "Histogram", "Boxplot"))
+
+    st.sidebar.text ("Specify Input Parameters")
+    x_axis = st.sidebar.selectbox("Select x-axis", df.columns)
+    y_axis = st.sidebar.selectbox("Select y-axis", df.columns)
+
+    features = user_input_features(df)
 
     # Draw plots including Scatterplots, Histogram, Lineplots, Boxplot
+    #df.plot.bar()
+    #st.pyplot()
+
+    # def plot(count):
+    #     x = [str(i) for i in range(0, count)]
+    #     y = list(range(0, count))
+    #     return px.bar(x=x, y=y)
+
+    # count = st.sidebar.slider(label="Count", min_value=1, max_value=50, value=10)
+    # st.write("Streamlit - Slider with Plot Performance Test")
+    # st.write(plot(count))
+
+    # st.line_chart(df[[x_axis,y_axis]])
+
+    # f = px.histogram(df.query(f".between{features}"))
+    # f.update_xaxes(title="Price")
+    # f.update_yaxes(title="No. of listings")
+    # st.plotly_chart(f)
+
+    # fig, ax = plt.subplots()
+    # ax.set_title(chart + ' plotting '+ x_axis + ' by ' + y_axis)
+    # ax.set_xlabel(x_axis)
+    # ax.set_ylabel(y_axis)
+    # st.write(features)
+
+    # if chart == 'Scatterplot':
+    # ax.scatter(features[x_axis], features[y_axis])
+    # elif chart == 'Lineplot':
+    #     ax.plot(features[x_axis], features[y_axis])
+    # elif chart == 'Histogram': 
+    #     ax.hist(features, bins=20)
+    # else:
+    #     ax.boxplot(features)
+            
+    # st.pyplot(fig)
     
     ###################### CORRELATION ANALYSIS #######################
     st.markdown("### Looking for Correlations")
+    st.write('Calculation correlation between user-chosen features')
 
     # Collect features for correlation analysis using multiselect
     defaultcols = ["housing_median_age", "total_rooms", "total_bedrooms", "population", "households"]
     cols = st.multiselect("Columns", df.columns.tolist(), default=defaultcols)
     
     # Compute correlation between selected features 
-    correlation = compute_correlation(df, cols)
-    st.write(correlation)
+    user_correlation = compute_correlation(df, cols)
+    st.write(user_correlation)
 
     # Display correlation of all feature pairs 
-    
+    st.write('Plotting correlation between all features')
+    f= px.scatter_matrix(df[cols])
+    f.update_traces(marker=dict(size=4, opacity=.5, color='LightSkyBlue'))
+    st.plotly_chart(f)
+
     st.markdown('Continue to Preprocess Data')
