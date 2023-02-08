@@ -49,6 +49,8 @@ def load_dataset(data):
     Output: pandas dataframe df
     - Checkpoint 1 - Read .csv file containing a dataset
     """
+    # Error checking - check for string
+
     df = pd.read_csv(data)
 
     return df
@@ -121,10 +123,17 @@ def fetch_housing_data(housing_url=HOUSING_URL, housing_path=HOUSING_PATH):
 # Create two columns for dataset upload
 # Call functions to upload data or restore dataset
 col1, col2 = st.columns(2)
-# with(col1):
-# with(col2):
+with(col1): # uploading data from local machine
+    data = st.file_uploader("Upload your data", type=['csv','txt']) 
+with(col2): # uploading data from the cloud
+    data_path = st.text_input("Enter dataset url", "", key="data_url")
 
-data=st.file_uploader("Upload a csv file")
+if(data_path):
+    fetch_housing_data()
+    data = os.path.join(HOUSING_PATH, "housing.csv")
+    st.write("You entered: ", data_path)
+
+#data=None
 if data:
     ###################### EXPLORE DATASET #######################
     st.markdown('### Explore Dataset Features')
@@ -133,6 +142,7 @@ if data:
     df = load_dataset(data)
 
     # Restore dataset if already in memory
+    st.session_state['house_df'] = df
 
     # Display feature names and descriptions (from feature_lookup)
     display_features(df,feature_lookup)
@@ -149,68 +159,87 @@ if data:
     st.sidebar.header('Specify Input Parameters')
 
     # Collect user plot selection
-    st.sidebar.text ("Select type of chart")
-    chart = st.sidebar.selectbox("Type of chart",("Scatterplot", "Lineplot", "Histogram", "Boxplot"))
+    st.sidebar.header ("Select type of chart")
+    chart_select = st.sidebar.selectbox(
+        label = "Type of chart",
+        options =["Scatterplot", "Lineplot", "Histogram", "Boxplot"])
 
-    st.sidebar.text ("Specify Input Parameters")
-    x_axis = st.sidebar.selectbox("Select x-axis", df.columns)
-    y_axis = st.sidebar.selectbox("Select y-axis", df.columns)
-
-    features = user_input_features(df)
+    numeric_columns = list(df.select_dtypes(['float','int']).columns)
 
     # Draw plots including Scatterplots, Histogram, Lineplots, Boxplot
-    #df.plot.bar()
-    #st.pyplot()
+    if(chart_select =='Scatterplot'):
+        try: 
+            st.sidebar.text ("Specify Axis Parameters")
+            x_values = st.sidebar.selectbox("Select x-axis", options=numeric_columns)
+            y_values = st.sidebar.selectbox("Select y-axis", options=numeric_columns)
+            side_bar_data = user_input_features(df)
+            plot = px.scatter(data_frame=df, 
+                              x=x_values, 
+                              y=y_values, 
+                              range_x = [df[x_values].min(), side_bar_data[x_values]], 
+                              range_y = [df[y_values].min(), side_bar_data[y_values]])
+            st.write(plot)
+        except Exception as e:
+            print(e)
+    if(chart_select =='Lineplot'):
+        try: 
+            st.sidebar.text ("Specify Axis Parameters")
+            x_values = st.sidebar.selectbox("Select x-axis", options=numeric_columns)
+            y_values = st.sidebar.selectbox("Select y-axis", options=numeric_columns)
+            side_bar_data = user_input_features(df)
+    #         plot = px.scatter(data_frame=df, 
+    #                           x=x_values, 
+    #                           y=y_values, 
+    #                           range_x = [df[x_values].min(), side_bar_data[x_values]], 
+    #                           range_y = [df[y_values].min(), side_bar_data[y_values]])
+            st.write(plot)
+        except Exception as e:
+            print(e)
+    if(chart_select =='Histogram'):
+        try: 
+            st.sidebar.text ("Specify Axis Parameters")
+            values = st.sidebar.selectbox("Select x-axis", options=numeric_columns)
+            side_bar_data = user_input_features(df)
+    #         plot = px.hist(data_frame=df, 
+    #                           x=values, 
+    #                           range_x = [df[values].min(), side_bar_data[values]])
+            st.write(plot)
+        except Exception as e:
+            print(e)
+    if(chart_select =='Boxplot'):
+        try: 
+            st.sidebar.text ("Specify Axis Parameters")
+            values = st.sidebar.selectbox("Select x-axis", options=numeric_columns)
+            side_bar_data = user_input_features(df)
+    #         plot = px.hist(data_frame=df, 
+    #                           x=values, 
+    #                           range_x = [df[values].min(), side_bar_data[values]])
+            st.write(plot)
+        except Exception as e:
+            print(e)
 
-    # def plot(count):
-    #     x = [str(i) for i in range(0, count)]
-    #     y = list(range(0, count))
-    #     return px.bar(x=x, y=y)
-
-    # count = st.sidebar.slider(label="Count", min_value=1, max_value=50, value=10)
-    # st.write("Streamlit - Slider with Plot Performance Test")
-    # st.write(plot(count))
-
-    # st.line_chart(df[[x_axis,y_axis]])
-
-    # f = px.histogram(df.query(f".between{features}"))
-    # f.update_xaxes(title="Price")
-    # f.update_yaxes(title="No. of listings")
-    # st.plotly_chart(f)
-
-    # fig, ax = plt.subplots()
-    # ax.set_title(chart + ' plotting '+ x_axis + ' by ' + y_axis)
-    # ax.set_xlabel(x_axis)
-    # ax.set_ylabel(y_axis)
-    # st.write(features)
-
-    # if chart == 'Scatterplot':
-    # ax.scatter(features[x_axis], features[y_axis])
-    # elif chart == 'Lineplot':
-    #     ax.plot(features[x_axis], features[y_axis])
-    # elif chart == 'Histogram': 
-    #     ax.hist(features, bins=20)
-    # else:
-    #     ax.boxplot(features)
-            
-    # st.pyplot(fig)
     
     ###################### CORRELATION ANALYSIS #######################
     st.markdown("### Looking for Correlations")
     st.write('Calculation correlation between user-chosen features')
 
     # Collect features for correlation analysis using multiselect
-    defaultcols = ["housing_median_age", "total_rooms", "total_bedrooms", "population", "households"]
-    cols = st.multiselect("Columns", df.columns.tolist(), default=defaultcols)
+    select_features = st.multiselect("Select two or more features for correlation", numeric_columns)
     
     # Compute correlation between selected features 
-    user_correlation = compute_correlation(df, cols)
-    st.write(user_correlation)
+    correlation = compute_correlation(df, select_features)
+    st.write(correlation)
 
     # Display correlation of all feature pairs 
     st.write('Plotting correlation between all features')
-    f= px.scatter_matrix(df[cols])
-    f.update_traces(marker=dict(size=4, opacity=.5, color='LightSkyBlue'))
-    st.plotly_chart(f)
+    if(select_features):
+        try:
+            #fig = px.scatter_matrix(df[select_features])
+            #f.update_traces(marker=dict(size=4, opacity=.5, color='LightBlue'))
+            #st.plotly_chart(fig)
+            fig = scatter_matrix(df[select_features], fig_size=(12,8))
+            st.pyplot(fig[0][0].get_figure())
+        except Exception as e:
+            print(e)
 
     st.markdown('Continue to Preprocess Data')
