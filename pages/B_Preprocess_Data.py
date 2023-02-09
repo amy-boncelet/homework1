@@ -65,28 +65,36 @@ def impute_dataset(X, impute_method):
 # Checkpoint 5
 def compute_descriptive_stats(X, stats_feature_select, stats_select):
     """
-    Input: 
+    Input: a datafram (X), a column name (stats_feature_select), and a list of statistics to analyze (stats_select)
     Output: 
     """
-    for feature in stats_feature_select: 
-        output_str=feature
-        out_dict = {
-            'mean': X[feature].mean(),
-            'median': X[feature].median(),
-            'max': X[feature].max(),
-            'min': X[feature].min()
-        }
-        for stat in stats_select:
+    output_str =''
+    # for feature in stats_feature_select: 
+    #     output_str=output_str + feature
 
-            output_str = output_str + stat
+    # calculate the four statistics for the input feature
+    out_dict = {
+        'mean': round(X[stats_feature_select].mean(), 2),
+        'median': round(X[stats_feature_select].median(),2),
+        'max': round(X[stats_feature_select].max(),2),
+        'min': round(X[stats_feature_select].min(),2)
+    }
 
+    # convert stats_select to lowercase to match out_dict options
+    stats_select = list(map(lambda x: x.lower(), stats_select))
+
+    # iterate through the dictionary and add information to output string if the statistic is in the input list stats_select
+    for stat, value in out_dict.items():
+        if stat in stats_select:
+            output_str = output_str + stat + ': ' + str(value) + ' | '
+    
     return output_str, out_dict
 
 # Checkpoint 6
 def split_dataset(X, number):
     """
-    Input: 
-    Output: 
+    Input: a dataframe (X) and a number (number) for which to split the dataframe into testing and training observations. The input number is the testing portion
+    Output: two dataframes spilt based on the number 
     """
     try: 
         number = int(number)/100
@@ -149,7 +157,9 @@ if df is not None:
     descriptive_stat_options = st.multiselect("Select descriptive statistics to show", ['Mean', 'Median', 'Min', 'Max'])
  
     # Compute Descriptive Statistics including mean, median, min, max
-    # (feature_str, stat_dict) = compute_descriptive_stats(df,  descriptive_stat_features,  descriptive_stat_options)
+    for feature in descriptive_stat_features: 
+        (feature_str, stat_dict) = compute_descriptive_stats(df,  feature,  descriptive_stat_options)
+        st.write(f'Descriptive stats for : {feature} - ', feature_str)
     # for feature in feature_str:
     #     st.write(feature, )
         
