@@ -49,9 +49,10 @@ def load_dataset(data):
     Output: pandas dataframe df
     - Checkpoint 1 - Read .csv file containing a dataset
     """
-    # Error checking - check for string
-
-    df = pd.read_csv(data)
+    try: 
+        df = pd.read_csv(data)
+    except Exception as e:
+            print(e)
 
     return df
 
@@ -137,7 +138,7 @@ if(data_path):
 if data:
     ###################### EXPLORE DATASET #######################
     st.markdown('### Explore Dataset Features')
-
+    
     # Load dataset
     df = load_dataset(data)
 
@@ -187,33 +188,31 @@ if data:
             x_values = st.sidebar.selectbox("Select x-axis", options=numeric_columns)
             y_values = st.sidebar.selectbox("Select y-axis", options=numeric_columns)
             side_bar_data = user_input_features(df)
-    #         plot = px.scatter(data_frame=df, 
-    #                           x=x_values, 
-    #                           y=y_values, 
-    #                           range_x = [df[x_values].min(), side_bar_data[x_values]], 
-    #                           range_y = [df[y_values].min(), side_bar_data[y_values]])
+            plot = px.line(data_frame=df, 
+                              x=x_values, 
+                              y=y_values, 
+                              range_x = [df[x_values].min(), side_bar_data[x_values]], 
+                              range_y = [df[y_values].min(), side_bar_data[y_values]])
             st.write(plot)
         except Exception as e:
             print(e)
     if(chart_select =='Histogram'):
         try: 
             st.sidebar.text ("Specify Axis Parameters")
-            values = st.sidebar.selectbox("Select x-axis", options=numeric_columns)
+            values = st.sidebar.selectbox("Select feature", options=numeric_columns)
             side_bar_data = user_input_features(df)
-    #         plot = px.hist(data_frame=df, 
-    #                           x=values, 
-    #                           range_x = [df[values].min(), side_bar_data[values]])
+            plot = px.histogram(df, values, 
+                              range_x = [df[values].min(), side_bar_data[values]])
             st.write(plot)
         except Exception as e:
             print(e)
     if(chart_select =='Boxplot'):
         try: 
             st.sidebar.text ("Specify Axis Parameters")
-            values = st.sidebar.selectbox("Select x-axis", options=numeric_columns)
+            values = st.sidebar.selectbox("Select feature", options=numeric_columns)
             side_bar_data = user_input_features(df)
-    #         plot = px.hist(data_frame=df, 
-    #                           x=values, 
-    #                           range_x = [df[values].min(), side_bar_data[values]])
+            plot = px.box(df, values, 
+                              range_x = [df[values].min(), side_bar_data[values]])
             st.write(plot)
         except Exception as e:
             print(e)
@@ -234,11 +233,11 @@ if data:
     st.write('Plotting correlation between all features')
     if(select_features):
         try:
-            #fig = px.scatter_matrix(df[select_features])
-            #f.update_traces(marker=dict(size=4, opacity=.5, color='LightBlue'))
-            #st.plotly_chart(fig)
-            fig = scatter_matrix(df[select_features], fig_size=(12,8))
-            st.pyplot(fig[0][0].get_figure())
+            fig = px.scatter_matrix(df[select_features])
+            fig.update_traces(marker=dict(size=4, opacity=.5, color='LightBlue'))
+            st.plotly_chart(fig)
+            # fig = scatter_matrix(df[select_features], fig_size=(12,8))
+            # st.pyplot(fig[0][0].get_figure())
         except Exception as e:
             print(e)
 
