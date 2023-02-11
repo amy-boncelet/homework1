@@ -37,8 +37,8 @@ def restore_dataset():
 # Checkpoint 3
 def remove_features(X,removed_features):
     """
-    Input: full dataframe X and list of columns, removed_features, to remove
-    Output: new dataframe with dropped columns
+    Input: X is a pandas dataframe and removed_features is a list of columns names to remove
+    Output: pandas dataframe (dropped_X) with dropped columns
     """
     dropped_X = X.drop(columns=removed_features)
     
@@ -47,8 +47,8 @@ def remove_features(X,removed_features):
 # Checkpoint 4
 def impute_dataset(X, impute_method):
     """
-    Input: X (dataframe) with missing values and impute_method (string) use to imput missing values
-    Output: updated dataframe with missing values imputed based on method desired
+    Input: X is a pandas dataframe (containing missing values) and impute_method is a string to determine how to imput missing values
+    Output: pandas dataframe with missing values imputed
     """
     # try:
     if (impute_method == 'Zero'):
@@ -65,12 +65,10 @@ def impute_dataset(X, impute_method):
 # Checkpoint 5
 def compute_descriptive_stats(X, stats_feature_select, stats_select):
     """
-    Input: a datafram (X), a column name (stats_feature_select), and a list of statistics to analyze (stats_select)
-    Output: 
+    Input: X is a pandas dataframe, stats_feature_select is a feature name (string), and stats_select is list of statistics to analyze
+    Output: a string listing the statistics for the given feature and the dictionary for the statistics
     """
     output_str =''
-    # for feature in stats_feature_select: 
-    #     output_str=output_str + feature
 
     # calculate the four statistics for the input feature
     out_dict = {
@@ -93,8 +91,8 @@ def compute_descriptive_stats(X, stats_feature_select, stats_select):
 # Checkpoint 6
 def split_dataset(X, number):
     """
-    Input: a dataframe (X) and a number (number) for which to split the dataframe into testing and training observations. The input number is the testing portion
-    Output: two dataframes spilt based on the number 
+    Input: X is a pandas dataframe and number is a number for which to split the dataframe into testing and training observations. The input number is the testing portion
+    Output: two pandas dataframes spilt based on the number 
     """
     try: 
         number = int(number)/100

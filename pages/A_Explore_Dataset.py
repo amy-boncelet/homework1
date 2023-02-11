@@ -230,7 +230,7 @@ if data:
     st.write(correlation)
 
     # Display correlation of all feature pairs 
-    st.write('Plotting correlation between all features')
+    st.write('Plotting correlation between chosen features')
     if(select_features):
         try:
             fig = px.scatter_matrix(df[select_features])
