@@ -50,15 +50,15 @@ def impute_dataset(X, impute_method):
     Input: X is a pandas dataframe (containing missing values) and impute_method is a string to determine how to imput missing values
     Output: pandas dataframe with missing values imputed
     """
-    # try:
-    if (impute_method == 'Zero'):
-        imputed_df = X.fillna(0)
-    elif (impute_method == 'Mean'):
-        imputed_df = X.fillna(X.mean())
-    else:
-        imputed_df = X.fillna(X.median()) 
-    # except Exception as e:
-    #     print (e)
+    try:
+        if (impute_method == 'Zero'):
+            imputed_df = X.fillna(0)
+        elif (impute_method == 'Mean'):
+            imputed_df = X.fillna(X.mean())
+        else:
+            imputed_df = X.fillna(X.median()) 
+    except Exception as e:
+        print (e)
     
     return imputed_df
 
@@ -70,21 +70,34 @@ def compute_descriptive_stats(X, stats_feature_select, stats_select):
     """
     output_str =''
 
-    # calculate the four statistics for the input feature
     out_dict = {
-        'mean': round(X[stats_feature_select].mean(), 2),
-        'median': round(X[stats_feature_select].median(),2),
-        'max': round(X[stats_feature_select].max(),2),
-        'min': round(X[stats_feature_select].min(),2)
+        'mean': None,
+        'median': None,
+        'max': None,
+        'min': None
     }
 
     # convert stats_select to lowercase to match out_dict options
     stats_select = list(map(lambda x: x.lower(), stats_select))
+    
+    # iterate through the feature dictionary  
+    for feature in stats_feature_select:
 
-    # iterate through the dictionary and add information to output string if the statistic is in the input list stats_select
-    for stat, value in out_dict.items():
-        if stat in stats_select:
-            output_str = output_str + stat + ': ' + str(value) + ' | '
+        # iterate through stats dictionary and calculate selected statistics
+        for stat in stats_select:
+            if stat == 'mean':
+                out_dict['mean'] = round(X[feature].mean(),2)
+            elif stat == 'median':
+                out_dict['median'] = round(X[feature].median(),2)
+            elif stat == 'max':
+                out_dict['max'] = round(X[feature].max(),2)
+            elif stat == 'min':
+                out_dict['min'] = round(X[feature].min(),2)
+        
+        # add information to output string for current feature for selected stats
+        output_str += f'\nDescriptive stats for {feature} - '
+        for stat, value in out_dict.items():
+            output_str += f'{stat}: {str(value)} | \n'
     
     return output_str, out_dict
 
@@ -95,7 +108,7 @@ def split_dataset(X, number):
     Output: two pandas dataframes spilt based on the number 
     """
     try: 
-        number = int(number)/100
+        number = number/100
         train, test = train_test_split(X, test_size=number)
     except Exception as e:
         print(e)
@@ -155,29 +168,28 @@ if df is not None:
     descriptive_stat_options = st.multiselect("Select descriptive statistics to show", ['Mean', 'Median', 'Min', 'Max'])
  
     # Compute Descriptive Statistics including mean, median, min, max
-    for feature in descriptive_stat_features: 
-        (feature_str, stat_dict) = compute_descriptive_stats(df,  feature,  descriptive_stat_options)
-        st.write(f'Descriptive stats for : {feature} - ', feature_str)
-    # for feature in feature_str:
-    #     st.write(feature, )
+    # for feature in descriptive_stat_features: 
+        # (feature_str, stat_dict) = compute_descriptive_stats(df,  feature,  descriptive_stat_options)
+        # st.write(f'Descriptive stats for : {feature} - ', feature_str)
+    (feature_str, stat_dict) = compute_descriptive_stats(df,  descriptive_stat_features,  descriptive_stat_options)
+    st.write(feature_str)
         
     # Display updated dataframe
     st.markdown('### Result of the imputed dataframe')
 
     # Split train/test
     st.markdown('### Enter the percentage of test data to use for training the model')
-    test_perc = st.text_input('Enter size of test set (%)', '25')
+    test_perc = st.number_input('Enter size of test set (%)', min_value=1, max_value=99)
 
     # Compute the percentage of test and training data
     (train, test) = split_dataset(df,test_perc)
     train_size = train.shape[0]
     test_size = test.shape[0]
     total_size = test_size + train_size
-    train_perc = (train_size/total_size)*100
+    train_perc = 100-test_perc
     
     # Print dataset split result
     st.write(f'The complete dataset contains {total_size} observations. The training dataset contains {train_size} observations ({train_perc}% of data). The testing dataset contains {test_size} observations ({test_perc}% of data)')
-    #st.write('Train size is :', train_size)
 
     # Save state of train and test split
     st.session_state['train_df'] = train
